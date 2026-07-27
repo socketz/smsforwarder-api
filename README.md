@@ -11,7 +11,7 @@
   <p>
     📱 Client: <a href="https://github.com/ShuttleLab/SMSForwarder">SMSForwarder</a>
     &nbsp;·&nbsp;
-    🌐 <a href="https://smsforwarder.shuttlelab.org">smsforwarder.shuttlelab.org</a>
+    🌐 <a href="https://smsforwarder.shuttlelab.org">SMS Forwarder — forward SMS to Telegram</a>
   </p>
 </div>
 
