@@ -2,8 +2,11 @@
 /smsforwarder-api
 /main
 
-# Local database (WAL/SHM siblings too)
+# Internal docs stay local; keep the README
 *.md
+!README.md
+
+# Local database (WAL/SHM siblings too)
 *.db
 *.db-shm
 *.db-wal
