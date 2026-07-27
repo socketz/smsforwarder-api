@@ -20,7 +20,7 @@
 ![Go](https://img.shields.io/badge/Go-1.25-00ADD8?style=flat-square&logo=go)
 ![SQLite](https://img.shields.io/badge/SQLite-modernc%20(CGO--free)-003B57?style=flat-square&logo=sqlite)
 ![Telegram](https://img.shields.io/badge/Telegram-Bot-26A5E4?style=flat-square&logo=telegram)
-![License](https://img.shields.io/badge/License-Personal_use-blue?style=flat-square)
+![License](https://img.shields.io/badge/License-AGPL--3.0-blue?style=flat-square)
 
 </div>
 
@@ -114,7 +114,10 @@ curl -s https://smsforwarder-api.shuttlelab.org/healthz   # {"ok":true}
 
 ## License
 
-For personal use.
+Licensed under the **GNU Affero General Public License v3.0** (AGPL-3.0) — see
+[LICENSE](LICENSE). You may use, study, modify and redistribute it, but any distributed
+or network-served derivative (including a hosted instance) must also be released under
+AGPL-3.0.
 
 <div align="center">
   Built by <a href="https://github.com/ShuttleLab">ShuttleLab</a>
