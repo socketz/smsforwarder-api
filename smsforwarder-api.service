@@ -1,0 +1,21 @@
+[Unit]
+Description=smsforwarder HTTP API
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/root/smsforwarder-api
+ExecStart=/root/smsforwarder-api/smsforwarder-api
+Restart=on-failure
+RestartSec=3
+
+EnvironmentFile=/root/smsforwarder-api/.env
+
+NoNewPrivileges=true
+PrivateTmp=true
+
+MemoryHigh=1G
+MemoryMax=2G
+
+[Install]
+WantedBy=multi-user.target

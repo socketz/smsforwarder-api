@@ -1,0 +1,16 @@
+# Compiled binary
+/smsforwarder-api
+/main
+
+# Local database (WAL/SHM siblings too)
+*.md
+*.db
+*.db-shm
+*.db-wal
+
+# Local env
+.env
+
+.DS_Store
+smsforwarder-api
+smsforwarder.db
