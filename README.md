@@ -36,6 +36,10 @@ finally given up), then it is deleted. Only metadata is kept in the delivery log
 to the operator. Modeled on the sibling `secretary` project — one binary, pure-Go SQLite
 (no CGO), no message queue, no ORM.
 
+The **official instance is operated by ShuttleLab** at `smsforwarder-api.shuttlelab.org`, and
+the released app talks to it out of the box. Because the code is open source (AGPL-3.0),
+anyone can also run their own instance.
+
 ## Key Features
 
 - **Multi-user** — open registration; every user's data is isolated (all queries scoped by `user_id`). A message can never be delivered to the wrong user.
