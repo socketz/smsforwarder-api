@@ -27,8 +27,8 @@ func TestSplitMessage(t *testing.T) {
 		t.Fatal("ascii rejoin lost data")
 	}
 
-	// multibyte (Chinese) must never split a rune and must rejoin exactly
-	s2 := strings.Repeat("中", 5000)
+	// multibyte (non-ASCII) text must never split a rune and must rejoin exactly
+	s2 := strings.Repeat("€", 5000)
 	p2 := splitMessage(s2, 4000)
 	if strings.Join(p2, "") != s2 {
 		t.Fatal("multibyte rejoin lost data")

@@ -87,24 +87,24 @@ func (t *Bot) onUpdate(ctx context.Context, b *bot.Bot, update *models.Update) {
 	chatID := update.Message.Chat.ID
 	code := parseBindCode(update.Message.Text)
 	if code == "" {
-		t.reply(ctx, chatID, "你好！请在「短信转发」App 里点「绑定 Telegram」，我会自动把你和账号关联起来。")
+		t.reply(ctx, chatID, "Hi! Tap \"Bind Telegram\" in the SMS Forwarder app and I'll link your account automatically.")
 		return
 	}
 
 	userID, channelID, err := t.st.ClaimBindCode(ctx, code, store.Now())
 	if err != nil {
-		t.reply(ctx, chatID, "绑定码无效或已过期，请回 App 重新获取。")
+		t.reply(ctx, chatID, "That bind code is invalid or has expired. Please get a new one in the app.")
 		return
 	}
 	// Learn the chat_id from Telegram (authoritative) and store it on the channel.
 	cfg := fmt.Sprintf(`{"chat_id":%d}`, chatID)
 	if err := t.st.SetChannelConfig(ctx, channelID, cfg); err != nil {
 		log.Printf("tg: SetChannelConfig: %v", err)
-		t.reply(ctx, chatID, "绑定时出错了，请稍后重试。")
+		t.reply(ctx, chatID, "Something went wrong while binding. Please try again later.")
 		return
 	}
 	_ = userID
-	t.reply(ctx, chatID, "✅ 绑定成功！以后你的短信会转发到这里。")
+	t.reply(ctx, chatID, "✅ Bound successfully! Your SMS will be forwarded here from now on.")
 }
 
 func (t *Bot) reply(ctx context.Context, chatID int64, text string) {

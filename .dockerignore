@@ -1,0 +1,10 @@
+.git
+.kilo
+.env
+*.db
+*.db-shm
+*.db-wal
+smsforwarder-api
+smsforwarder-api.exe
+main
+plans

@@ -264,7 +264,7 @@ func (s *Server) testChannel(w http.ResponseWriter, r *http.Request) {
 	}
 	err := sender.Send(r.Context(), c.Config, channels.Message{
 		Sender:    "TEST",
-		Content:   "这是一条来自「短信转发」的测试消息",
+		Content:   "This is a test message from SMS Forwarder",
 		Timestamp: store.Now(),
 	})
 	if err != nil {

@@ -93,10 +93,10 @@ func Ready(typ, config string) bool {
 // formatText is the shared human-readable rendering of an SMS.
 func formatText(msg Message) (title, body string) {
 	t := time.Unix(msg.Timestamp, 0).Format("2006-01-02 15:04:05")
-	title = "新短信"
+	title = "New SMS"
 	if msg.Sender != "" {
-		title = "新短信 - " + msg.Sender
+		title = "New SMS - " + msg.Sender
 	}
-	body = fmt.Sprintf("发件人: %s\n时间: %s\n\n%s", msg.Sender, t, msg.Content)
+	body = fmt.Sprintf("From: %s\nTime: %s\n\n%s", msg.Sender, t, msg.Content)
 	return title, body
 }

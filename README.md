@@ -116,6 +116,37 @@ sudo systemctl restart smsforwarder-api
 curl -s https://smsforwarder-api.shuttlelab.org/healthz   # {"ok":true}
 ```
 
+### Deploy with Docker
+
+A `Dockerfile` + `compose.yaml` are included. The image builds the binary
+directly from the upstream source (`go install github.com/shuttlelab/smsforwarder-api@main`
+in the builder stage — no git clone, no local checkout is copied into the image;
+pin a commit with `docker compose build --build-arg MODULE_REF=<commit>`), runs
+hardened as a non-root user, keeps the SQLite database on a named volume, and
+publishes only the public API loopback-only on the host. Configure everything
+from a project-root `.env` (all 8 variables from `.env.example`; compose
+interpolation falls back to the same defaults, so `.env` is optional).
+
+```bash
+cp .env.example .env   # edit BOT_TOKEN, BOT_USERNAME, ADMIN_USER, ADMIN_PASSWORD
+docker compose up -d
+curl -s http://127.0.0.1:8090/healthz   # {"ok":true}
+```
+
+Notes:
+
+- `DB_PATH` is forced to `/data/smsforwarder.db` inside the container; the host
+  `.env` value for it is ignored. Data lives in the named volume `smsforwarder-data`
+  — back it up (`docker compose down` then copy the volume, or `docker run --rm -v
+  smsforwarder-data:/data -v $PWD:/backup alpine tar czf /backup/data.tgz -C /data .`).
+- Only port 8090 is published, bound to `127.0.0.1` (reverse proxy / tunnel on the
+  host terminates TLS). The admin console (8091) is **not** published; reach it via
+  `docker compose exec api wget -qO- http://127.0.0.1:8091/admin/login`. Never set
+  `ADMIN_ADDR` to `0.0.0.0` unless it is fronted by TLS — the console is plaintext
+  HTTP.
+- `docker compose logs -f api` for logs; `docker compose restart api` applies config
+  and env changes.
+
 ## License
 
 Licensed under the **GNU Affero General Public License v3.0** (AGPL-3.0) — see

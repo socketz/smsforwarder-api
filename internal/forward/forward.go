@@ -90,12 +90,13 @@ func (e *Engine) deliver(ctx context.Context, it store.OutboxItem) {
 		return
 	}
 
-	// 收件人对当前配置永久不可达（如 Telegram 403）：清掉该渠道绑定 → App 会显示
-	// "未绑定" 引导用户重绑；本条放弃（重试也没用）。
+	// Recipient permanently unreachable for the current config (e.g. Telegram 403):
+	// clear the channel binding → the app shows "unbound" and asks the user to
+	// re-bind; give up on this item (retrying won't help).
 	if errors.Is(sendErr, channels.ErrChannelUnbound) {
 		_ = e.st.ClearChannelBinding(ctx, ch.ID)
 		_ = e.st.DeleteOutbox(ctx, it.ID)
-		e.log(ctx, it.UserID, ch.Type, it.Sender, "fail", "绑定失效已清除，请重新绑定: "+sendErr.Error())
+		e.log(ctx, it.UserID, ch.Type, it.Sender, "fail", "binding cleared (no longer valid), please re-bind: "+sendErr.Error())
 		return
 	}
 
@@ -110,7 +111,7 @@ func (e *Engine) deliver(ctx context.Context, it store.OutboxItem) {
 	}
 }
 
-// finalizeFail gives up: delete the row (焚 the body) and log the failure.
+// finalizeFail gives up: delete the row (burn the body) and log the failure.
 func (e *Engine) finalizeFail(ctx context.Context, it store.OutboxItem, chType, detail string) {
 	_ = e.st.DeleteOutbox(ctx, it.ID)
 	e.log(ctx, it.UserID, chType, it.Sender, "fail", detail)

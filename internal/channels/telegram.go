@@ -30,7 +30,7 @@ func (s *telegramSender) Send(ctx context.Context, config string, msg Message) e
 	_, body := formatText(msg)
 	err := s.send(ctx, c.ChatID, "📩 "+body)
 	if err != nil && bindingDead(err) {
-		// 403 等：收件人对当前 bot 不可达（被拉黑 / bot 换了 / 会话不存在）
+		// 403 etc.: recipient unreachable via the current bot (blocked / bot replaced / no chat)
 		return fmt.Errorf("%w: %v", ErrChannelUnbound, err)
 	}
 	return err

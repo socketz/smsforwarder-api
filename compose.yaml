@@ -1,0 +1,26 @@
+services:
+  api:
+    build: .
+    image: smsforwarder-api:local
+    restart: unless-stopped
+    init: true
+    stop_grace_period: 10s
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      DB_PATH: /data/smsforwarder.db
+      HTTP_ADDR: ${HTTP_ADDR:-0.0.0.0:8090}
+      RATE_LIMIT_PER_MIN: ${RATE_LIMIT_PER_MIN:-60}
+      BOT_TOKEN: ${BOT_TOKEN:-}
+      BOT_USERNAME: ${BOT_USERNAME:-}
+      ADMIN_ADDR: ${ADMIN_ADDR:-127.0.0.1:8091}
+      ADMIN_USER: ${ADMIN_USER:-}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+    ports:
+      - "127.0.0.1:8090:8090"
+    volumes:
+      - smsforwarder-data:/data
+
+volumes:
+  smsforwarder-data:
