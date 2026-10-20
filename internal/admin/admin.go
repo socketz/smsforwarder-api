@@ -14,7 +14,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/shuttlelab/smsforwarder-api/internal/store"
+	"github.com/socketz/smsforwarder-api/internal/store"
 )
 
 const cookieName = "sfadmin"

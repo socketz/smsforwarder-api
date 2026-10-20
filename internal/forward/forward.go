@@ -10,8 +10,8 @@ import (
 	"log"
 	"time"
 
-	"github.com/shuttlelab/smsforwarder-api/internal/channels"
-	"github.com/shuttlelab/smsforwarder-api/internal/store"
+	"github.com/socketz/smsforwarder-api/internal/channels"
+	"github.com/socketz/smsforwarder-api/internal/store"
 )
 
 const (

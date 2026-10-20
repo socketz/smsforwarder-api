@@ -119,7 +119,7 @@ curl -s https://smsforwarder-api.shuttlelab.org/healthz   # {"ok":true}
 ### Deploy with Docker
 
 A `Dockerfile` + `compose.yaml` are included. The image builds the binary
-directly from the upstream source (`go install github.com/shuttlelab/smsforwarder-api@main`
+directly from the upstream source (`go install github.com/socketz/smsforwarder-api@main`
 in the builder stage — no git clone, no local checkout is copied into the image;
 pin a commit with `docker compose build --build-arg MODULE_REF=<commit>`), runs
 hardened as a non-root user, keeps the SQLite database on a named volume, and

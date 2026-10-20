@@ -15,7 +15,7 @@ import (
 
 	"github.com/go-telegram/bot"
 	"github.com/go-telegram/bot/models"
-	"github.com/shuttlelab/smsforwarder-api/internal/store"
+	"github.com/socketz/smsforwarder-api/internal/store"
 )
 
 type Bot struct {

@@ -15,7 +15,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/shuttlelab/smsforwarder-api/internal/store"
+	"github.com/socketz/smsforwarder-api/internal/store"
 	"golang.org/x/crypto/bcrypt"
 )
 

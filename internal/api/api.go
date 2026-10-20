@@ -10,10 +10,10 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/shuttlelab/smsforwarder-api/internal/auth"
-	"github.com/shuttlelab/smsforwarder-api/internal/channels"
-	"github.com/shuttlelab/smsforwarder-api/internal/ratelimit"
-	"github.com/shuttlelab/smsforwarder-api/internal/store"
+	"github.com/socketz/smsforwarder-api/internal/auth"
+	"github.com/socketz/smsforwarder-api/internal/channels"
+	"github.com/socketz/smsforwarder-api/internal/ratelimit"
+	"github.com/socketz/smsforwarder-api/internal/store"
 )
 
 type Server struct {

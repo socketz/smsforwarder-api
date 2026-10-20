@@ -7,9 +7,9 @@ ENV GOBIN=/out \
 	GOOS=linux
 WORKDIR /src
 # Layer 1: download module + deps into the cache (go.sum-verified).
-RUN go mod download github.com/shuttlelab/smsforwarder-api@${MODULE_REF}
+RUN go mod download github.com/socketz/smsforwarder-api@${MODULE_REF}
 # Layer 2: build the binary into $GOBIN (/out/smsforwarder-api).
-RUN go install -p 2 -trimpath -ldflags="-s -w" github.com/shuttlelab/smsforwarder-api@${MODULE_REF}
+RUN go install -p 2 -trimpath -ldflags="-s -w" github.com/socketz/smsforwarder-api@${MODULE_REF}
 
 FROM alpine:3.20
 RUN apk add --no-cache wget ca-certificates && adduser -D -u 10001 sfwd

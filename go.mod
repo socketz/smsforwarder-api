@@ -1,4 +1,4 @@
-module github.com/shuttlelab/smsforwarder-api
+module github.com/socketz/smsforwarder-api
 
 go 1.26.0
 

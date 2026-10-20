@@ -13,14 +13,14 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/shuttlelab/smsforwarder-api/internal/admin"
-	"github.com/shuttlelab/smsforwarder-api/internal/api"
-	"github.com/shuttlelab/smsforwarder-api/internal/channels"
-	"github.com/shuttlelab/smsforwarder-api/internal/config"
-	"github.com/shuttlelab/smsforwarder-api/internal/forward"
-	"github.com/shuttlelab/smsforwarder-api/internal/ratelimit"
-	"github.com/shuttlelab/smsforwarder-api/internal/store"
-	"github.com/shuttlelab/smsforwarder-api/internal/tg"
+	"github.com/socketz/smsforwarder-api/internal/admin"
+	"github.com/socketz/smsforwarder-api/internal/api"
+	"github.com/socketz/smsforwarder-api/internal/channels"
+	"github.com/socketz/smsforwarder-api/internal/config"
+	"github.com/socketz/smsforwarder-api/internal/forward"
+	"github.com/socketz/smsforwarder-api/internal/ratelimit"
+	"github.com/socketz/smsforwarder-api/internal/store"
+	"github.com/socketz/smsforwarder-api/internal/tg"
 )
 
 func main() {
