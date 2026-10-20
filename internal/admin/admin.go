@@ -204,6 +204,7 @@ func (s *Server) settingsSave(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	_ = s.st.SetSetting(ctx, "bot_token", r.PostForm.Get("bot_token"))
 	_ = s.st.SetSetting(ctx, "bot_username", r.PostForm.Get("bot_username"))
+	_ = s.st.SetSetting(ctx, "publish_chat_id", r.PostForm.Get("publish_chat_id"))
 	http.Redirect(w, r, "/admin/settings?saved=1", http.StatusSeeOther)
 }
 
@@ -232,5 +233,11 @@ func (s *Server) dataAction(w http.ResponseWriter, r *http.Request) {
 func (s *Server) renderSettings(w http.ResponseWriter, ctx context.Context, saved bool) {
 	tok, _ := s.st.GetSetting(ctx, "bot_token")
 	usr, _ := s.st.GetSetting(ctx, "bot_username")
-	render(w, "settings", map[string]any{"BotToken": tok, "BotUsername": usr, "Saved": saved})
+	pcid, _ := s.st.GetSetting(ctx, "publish_chat_id")
+	render(w, "settings", map[string]any{
+		"BotToken":       tok,
+		"BotUsername":    usr,
+		"PublishChatID":  pcid,
+		"Saved":          saved,
+	})
 }

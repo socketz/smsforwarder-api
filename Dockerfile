@@ -1,15 +1,17 @@
 # syntax=docker/dockerfile:1
-FROM golang:1.25-alpine AS build
-# Ref to build from the upstream repo directly (no git clone / no local COPY).
+FROM golang:1.26-alpine AS build
+# Ref to check out from the upstream repo (branch, tag, or commit SHA).
 ARG MODULE_REF=main
-ENV GOBIN=/out \
-	CGO_ENABLED=0 \
-	GOOS=linux
+RUN apk add --no-cache git \
+    && git init -q /src \
+    && git -C /src remote add origin https://github.com/socketz/smsforwarder-api.git \
+    && git -C /src fetch -q --depth 1 origin ${MODULE_REF} \
+    && git -C /src checkout -q FETCH_HEAD
 WORKDIR /src
-# Layer 1: download module + deps into the cache (go.sum-verified).
-RUN go mod download github.com/socketz/smsforwarder-api@${MODULE_REF}
-# Layer 2: build the binary into $GOBIN (/out/smsforwarder-api).
-RUN go install -p 2 -trimpath -ldflags="-s -w" github.com/socketz/smsforwarder-api@${MODULE_REF}
+# Layer 1: download deps into the cache (go.sum-verified).
+RUN go mod download
+# Layer 2: build as documented in the README (go build -o smsforwarder-api .).
+RUN CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /out/smsforwarder-api .
 
 FROM alpine:3.20
 RUN apk add --no-cache wget ca-certificates && adduser -D -u 10001 sfwd

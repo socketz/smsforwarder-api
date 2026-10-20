@@ -3,6 +3,7 @@ package store
 import (
 	"context"
 	"database/sql"
+	"strconv"
 )
 
 // ---- admin: users ----
@@ -261,4 +262,16 @@ func (s *Store) SetSetting(ctx context.Context, key, value string) error {
 		`INSERT INTO settings(key,value) VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value`,
 		key, value)
 	return err
+}
+
+// BroadcastChatID resolves the global broadcast target chat id: the DB setting
+// "publish_chat_id" (admin-editable) wins; fallback (env) applies when unset.
+// 0 = disabled. A channel/group chat id is negative.
+func (s *Store) BroadcastChatID(ctx context.Context, fallback int64) int64 {
+	if v, _ := s.GetSetting(ctx, "publish_chat_id"); v != "" {
+		if id, err := strconv.ParseInt(v, 10, 64); err == nil {
+			return id
+		}
+	}
+	return fallback
 }

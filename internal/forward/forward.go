@@ -7,6 +7,7 @@ package forward
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
 	"time"
 
@@ -25,10 +26,14 @@ const (
 type Engine struct {
 	st  *store.Store
 	reg *channels.Registry
+
+	// defaultBroadcastChatID is the env-fallback broadcast target (PUBLISH_CHAT_ID);
+	// the DB setting "publish_chat_id" (admin-editable) takes precedence per send.
+	defaultBroadcastChatID int64
 }
 
-func New(st *store.Store, reg *channels.Registry) *Engine {
-	return &Engine{st: st, reg: reg}
+func New(st *store.Store, reg *channels.Registry, defaultBroadcastChatID int64) *Engine {
+	return &Engine{st: st, reg: reg, defaultBroadcastChatID: defaultBroadcastChatID}
 }
 
 // Run blocks until ctx is cancelled, processing due outbox items on a ticker.
@@ -57,6 +62,10 @@ func (e *Engine) tick(ctx context.Context) {
 }
 
 func (e *Engine) deliver(ctx context.Context, it store.OutboxItem) {
+	if store.IsBroadcast(it) {
+		e.deliverBroadcast(ctx, it)
+		return
+	}
 	// Load the owning channel (scoped by user). If it's gone or disabled, drop.
 	ch, err := e.st.GetChannel(ctx, it.UserID, it.ChannelID)
 	if errors.Is(err, store.ErrNotFound) {
@@ -115,6 +124,49 @@ func (e *Engine) deliver(ctx context.Context, it store.OutboxItem) {
 func (e *Engine) finalizeFail(ctx context.Context, it store.OutboxItem, chType, detail string) {
 	_ = e.st.DeleteOutbox(ctx, it.ID)
 	e.log(ctx, it.UserID, chType, it.Sender, "fail", detail)
+}
+
+// deliverBroadcast sends one SMS to the operator-configured Telegram
+// channel/group (PUBLISH_CHAT_ID env fallback, DB "publish_chat_id" override).
+// It reuses the Sender path and the same backoff/retry as per-user delivery.
+// There is no channel binding to clear, so a permanently-dead target is
+// finalized (logged as a broadcast failure) rather than unbound.
+func (e *Engine) deliverBroadcast(ctx context.Context, it store.OutboxItem) {
+	chatID := e.st.BroadcastChatID(ctx, e.defaultBroadcastChatID)
+	if chatID == 0 {
+		// Target not configured (or disabled since enqueue): drop the row.
+		_ = e.st.DeleteOutbox(ctx, it.ID)
+		return
+	}
+	sender, ok := e.reg.Sender(channels.TypeTelegram)
+	if !ok {
+		e.finalizeFail(ctx, it, store.BroadcastChannelType, "no sender for channel type "+channels.TypeTelegram)
+		return
+	}
+	cfg := fmt.Sprintf(`{"chat_id":%d}`, chatID)
+	sendErr := sender.Send(ctx, cfg, channels.Message{
+		Sender:    it.Sender,
+		Content:   it.Content,
+		Timestamp: it.SmsTs,
+	})
+	if sendErr == nil {
+		_ = e.st.DeleteOutbox(ctx, it.ID)
+		e.log(ctx, it.UserID, store.BroadcastChannelType, it.Sender, "ok", "")
+		return
+	}
+	if errors.Is(sendErr, channels.ErrChannelUnbound) {
+		e.finalizeFail(ctx, it, store.BroadcastChannelType, "broadcast target unreachable: "+sendErr.Error())
+		return
+	}
+	attempts := it.Attempts + 1
+	if attempts >= maxAttempts {
+		e.finalizeFail(ctx, it, store.BroadcastChannelType, sendErr.Error())
+		return
+	}
+	next := store.Now() + int64(backoff(attempts).Seconds())
+	if err := e.st.RescheduleOutbox(ctx, it.ID, attempts, next); err != nil {
+		log.Printf("forward: RescheduleOutbox: %v", err)
+	}
 }
 
 func (e *Engine) log(ctx context.Context, userID int64, chType, sender, status, detail string) {

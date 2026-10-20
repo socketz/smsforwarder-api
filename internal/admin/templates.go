@@ -208,6 +208,9 @@ form.inline{display:inline}
 <label>Telegram bot username (without @)</label>
 <input name="bot_username" value="{{.BotUsername}}" style="width:100%" placeholder="YourBot">
 <p class="note">These override the BOT_TOKEN / BOT_USERNAME env values. A changed token needs a service restart (the bot starts long-polling at boot).</p>
+<label>Broadcast destination (channel/group chat id)</label>
+<input name="publish_chat_id" value="{{.PublishChatID}}" style="width:100%" placeholder="e.g. -1001234567890; 0 = off">
+<p class="note">A Telegram channel or group where every received SMS is also published, in addition to each user's own delivery. Chat ids are negative for channels/groups (get it via @getidsbot); 0 or empty disables. Changes apply on the next SMS — no restart needed.</p>
 <p><button type="submit">Save</button></p>
 </form>
 </div>

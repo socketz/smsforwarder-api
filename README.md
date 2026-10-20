@@ -44,7 +44,7 @@ anyone can also run their own instance.
 
 - **Multi-user** — open registration; every user's data is isolated (all queries scoped by `user_id`). A message can never be delivered to the wrong user.
 - **Device-token auth** — sign in once with username + password; the server issues a long-lived, per-device token (stored only as a SHA-256 hash) that the app sends as a Bearer credential. Tokens are individually revocable.
-- **Telegram channel** — one shared bot handles every user. Users bind by tapping a deep link and pressing Start (`/bind` flow); the bot writes their `chat_id` straight into the store. No tokens to copy.
+- **Telegram channel** — one shared bot handles every user. Users bind by tapping a deep link and pressing Start (`/bind` flow); the bot writes their `chat_id` straight into the store. No tokens to copy. Optionally, the operator can set a **broadcast target** (`PUBLISH_CHAT_ID`, or the admin console settings page): a Telegram channel/group where every received SMS is also published, in addition to each user's own delivery.
 - **Durable delivery** — an outbox with an exponential-backoff retry engine survives restarts; long messages are auto-split under Telegram's 4096-char limit; delivery is idempotent via a per-message key.
 - **Self-healing bindings** — when Telegram reports a recipient is unreachable (403: bot blocked / can't initiate), the binding is cleared automatically so the app prompts the user to re-bind. There is also a one-click "reset all Telegram bindings" for when the shared bot is replaced.
 - **Operator admin console** — an embedded web UI (session-cookie login) for delivery logs, user management (ban / revoke devices / delete), per-table data maintenance, and bot settings. Binds to localhost by default.
@@ -72,9 +72,10 @@ go run .                  # API on HTTP_ADDR (default 0.0.0.0:8090)
 ```
 
 Configuration (env, see `.env.example`): `DB_PATH`, `HTTP_ADDR`, `RATE_LIMIT_PER_MIN`,
-`BOT_TOKEN`, `BOT_USERNAME`, `ADMIN_ADDR`, `ADMIN_USER`, `ADMIN_PASSWORD`. The Telegram bot
+`BOT_TOKEN`, `BOT_USERNAME`, `PUBLISH_CHAT_ID`, `ADMIN_ADDR`, `ADMIN_USER`, `ADMIN_PASSWORD`. The Telegram bot
 token/username may also be set in the admin console (DB overrides env; a changed token
-needs a restart).
+needs a restart). The broadcast destination (`PUBLISH_CHAT_ID`, a channel/group chat id)
+is also editable in the admin console and applies to the next SMS — no restart needed.
 
 ### API
 
@@ -118,14 +119,16 @@ curl -s https://smsforwarder-api.shuttlelab.org/healthz   # {"ok":true}
 
 ### Deploy with Docker
 
-A `Dockerfile` + `compose.yaml` are included. The image builds the binary
-directly from the upstream source (`go install github.com/socketz/smsforwarder-api@main`
-in the builder stage — no git clone, no local checkout is copied into the image;
-pin a commit with `docker compose build --build-arg MODULE_REF=<commit>`), runs
-hardened as a non-root user, keeps the SQLite database on a named volume, and
-publishes only the public API loopback-only on the host. Configure everything
-from a project-root `.env` (all 8 variables from `.env.example`; compose
-interpolation falls back to the same defaults, so `.env` is optional).
+A `Dockerfile` + `compose.yaml` are included. The builder stage clones the
+upstream repository (`https://github.com/socketz/smsforwarder-api`, checked out at
+`MODULE_REF`, default `main`) and builds the binary with the same command as
+above — `go build -o smsforwarder-api .` — so no local checkout is copied into
+the image. The runtime image is hardened (non-root user), keeps the SQLite
+database on a named volume, and publishes only the public API loopback-only on
+the host. Configure everything from a project-root `.env` (all 8 variables from
+`.env.example`; compose interpolation falls back to the same defaults, so `.env`
+is optional). Pin a commit with
+`docker compose build --build-arg MODULE_REF=<commit>`.
 
 ```bash
 cp .env.example .env   # edit BOT_TOKEN, BOT_USERNAME, ADMIN_USER, ADMIN_PASSWORD

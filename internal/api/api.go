@@ -21,10 +21,18 @@ type Server struct {
 	reg         *channels.Registry
 	limit       *ratelimit.Limiter
 	botUsername string // empty => Telegram not configured on this server
+	botEnabled  bool   // shared bot is running (BOT_TOKEN set)
+
+	// defaultPublishChatID is the env-fallback broadcast target (PUBLISH_CHAT_ID);
+	// the DB setting "publish_chat_id" (admin-editable) takes precedence per SMS.
+	defaultPublishChatID int64
 }
 
-func NewServer(st *store.Store, reg *channels.Registry, limit *ratelimit.Limiter, botUsername string) *Server {
-	return &Server{st: st, reg: reg, limit: limit, botUsername: botUsername}
+func NewServer(st *store.Store, reg *channels.Registry, limit *ratelimit.Limiter, botUsername string, botEnabled bool, defaultPublishChatID int64) *Server {
+	return &Server{
+		st: st, reg: reg, limit: limit, botUsername: botUsername,
+		botEnabled: botEnabled, defaultPublishChatID: defaultPublishChatID,
+	}
 }
 
 func (s *Server) Routes() http.Handler {
@@ -347,6 +355,18 @@ func (s *Server) postSMS(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		if ok {
+			enqueued++
+		}
+	}
+	// Global broadcast target (operator-configured Telegram channel/group):
+	// every received SMS is also published there, in addition to per-user
+	// delivery. Enqueued as its own outbox row so it retries on its own.
+	// Requires the shared bot to be running.
+	if s.botEnabled && s.st.BroadcastChatID(r.Context(), s.defaultPublishChatID) != 0 {
+		if ok, err := s.st.EnqueueBroadcast(r.Context(), req.Sender, req.Content, smsTs, req.ClientMsgID); err != nil {
+			serverError(w, err)
+			return
+		} else if ok {
 			enqueued++
 		}
 	}

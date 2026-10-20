@@ -19,6 +19,22 @@ VALUES(?,?,?,?,?,?,0,?,?)`, userID, channelID, sender, content, smsTs, clientMsg
 	return n > 0, nil
 }
 
+// EnqueueBroadcast inserts a delivery task for the global broadcast target (a
+// configured Telegram channel/group). It uses the sentinel (user_id=0,
+// channel_id=0) and the same (channel_id, client_msg_id) dedup as per-user
+// rows, so retried SMS are not broadcast twice.
+func (s *Store) EnqueueBroadcast(ctx context.Context, sender, content string, smsTs int64, clientMsgID string) (bool, error) {
+	return s.EnqueueOutbox(ctx, 0, 0, sender, content, smsTs, clientMsgID)
+}
+
+// IsBroadcast reports whether an outbox row is the global broadcast item.
+func IsBroadcast(it OutboxItem) bool {
+	return it.UserID == 0 && it.ChannelID == 0
+}
+
+// BroadcastChannelType is the channel type recorded for broadcast deliveries.
+const BroadcastChannelType = "broadcast"
+
 func (s *Store) DueOutbox(ctx context.Context, now int64, limit int) ([]OutboxItem, error) {
 	rows, err := s.db.QueryContext(ctx, `
 SELECT id, user_id, channel_id, sender, content, sms_ts, client_msg_id, attempts, next_at, created_at

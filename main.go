@@ -41,6 +41,11 @@ func main() {
 		botUsername = v
 	}
 
+	// Broadcast target (Telegram channel/group); the env value is just a
+	// fallback — the store resolves the admin-editable "publish_chat_id"
+	// setting per SMS/send, so changes apply without a restart.
+	publishChatID := cfg.PublishChatID
+
 	reg := channels.NewRegistry()
 	limiter := ratelimit.New(cfg.RateLimitPerMin)
 
@@ -61,11 +66,11 @@ func main() {
 	}
 
 	// Delivery engine (polls the outbox, retries with backoff).
-	go forward.New(st, reg).Run(ctx)
+	go forward.New(st, reg, publishChatID).Run(ctx)
 
 	apiSrv := &http.Server{
 		Addr:              cfg.HTTPAddr,
-		Handler:           api.NewServer(st, reg, limiter, botUsername).Routes(),
+		Handler:           api.NewServer(st, reg, limiter, botUsername, botToken != "", publishChatID).Routes(),
 		ReadHeaderTimeout: 10 * time.Second,
 	}
 	go func() {
